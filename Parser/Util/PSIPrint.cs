@@ -38,20 +38,18 @@ public class PSIPrint : Visitor<StringBuilder> {
       => NWrite ($"{d.Name} : {d.Type}");
 
    public override StringBuilder Visit (NFnDecl d) {
-      NWrite ($"function {Declaration (d)} : {d.Type};");
+      if (d.Type == NType.Void)
+         NWrite ($"procedure {Declaration (d)};");
+      else
+         NWrite ($"function {Declaration (d)} : {d.Type};");
       return Visit (d.Block);
-   }
 
-   public override StringBuilder Visit (NProcDecl d) {
-      NWrite ($"procedure {Declaration (d)};"); 
-      return Visit (d.Block);
-   }
+      string Declaration (NFnDecl d) {
+         return $"{d.Name.Text} ({ParamsList (d.Params.GroupBy (x => x.Type))})";
 
-   string Declaration (NMethodDecl d) {
-      return $"{d.Name.Text} ({ParamsList (d.Params.GroupBy (x => x.Type))})";
-
-      string ParamsList (IEnumerable<IGrouping<NType, NVarDecl>> VarsList) => VarsList.Select (Params).ToCSV ("; ");
-      string Params (IGrouping<NType, NVarDecl> Vars) => $"{Vars.Select (x => x.Name.Text).ToCSV ()}: {Vars.Key}";
+         string ParamsList (IEnumerable<IGrouping<NType, NVarDecl>> VarsList) => VarsList.Select (Params).ToCSV ("; ");
+         string Params (IGrouping<NType, NVarDecl> Vars) => $"{Vars.Select (x => x.Name.Text).ToCSV ()}: {Vars.Key}";
+      }
    }
 
    public override StringBuilder Visit (NCompoundStmt b) {

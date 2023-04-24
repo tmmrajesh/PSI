@@ -33,31 +33,29 @@ public class Parser {
       List<NVarDecl> vars = new ();
       if (Match (VAR)) 
          do { vars.AddRange (VarDecls ()); Expect (SEMI); } while (Peek (IDENT));
-      List<NMethodDecl> fns = new ();
+      List<NFnDecl> fns = new ();
       while (Peek (FUNCTION, PROCEDURE)) {
-         fns.Add (MethodDecl (Peek (FUNCTION)));
+         fns.Add (FunctionDecl (Peek (FUNCTION)));
       }
       return new (vars.ToArray (), fns.ToArray ());
    }
 
    // func-decl = "function" IDENT paramlist ":" type; block ";" .
    // proc-decl = "procedure" IDENT paramlist; block ";" .
-   NMethodDecl MethodDecl (bool isfn) {
+   NFnDecl FunctionDecl (bool isfn) {
       Expect (isfn ? FUNCTION : PROCEDURE); var name = Expect (IDENT);
       List<NVarDecl> vars = new ();
       Expect (OPEN);
       if (Peek (IDENT)) do vars.AddRange (VarDecls ()); while (Match (SEMI));
       Expect (CLOSE);
-      NType type = Unknown;
+      NType type = NType.Void;
       if (isfn) {
          Expect (COLON);
          type = Type ();
       }
       Expect (SEMI);
       var block = Block ();
-      NMethodDecl method = isfn 
-         ? new NFnDecl (name, vars.ToArray (), type, block)
-         : new NProcDecl (name, vars.ToArray (), block);
+      NFnDecl method = new NFnDecl (name, vars.ToArray (), type, block);
       Expect (SEMI);
       return method;
    }

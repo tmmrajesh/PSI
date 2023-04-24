@@ -20,7 +20,7 @@ public record NBlock (NDeclarations Decls, NCompoundStmt Body) : Node {
 }
 
 // The declarations section precedes the body of every block
-public record NDeclarations (NVarDecl[] Vars, NMethodDecl[] Methods) : Node {
+public record NDeclarations (NVarDecl[] Vars, NFnDecl[] Methods) : Node {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 
@@ -29,18 +29,8 @@ public record NVarDecl (Token Name, NType Type) : Node {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 
-// A base type of Method and Procedure declarations
-public abstract record NMethodDecl (Token Name, NVarDecl[] Params, NBlock Block) : Node { }
-
 // Declares a function with parameters and return-type
-public record NFnDecl (Token Name, NVarDecl[] Params, NType Type, NBlock Block) 
-   : NMethodDecl (Name, Params, Block) {
-   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
-}
-
-// Declares a function with parameters and return-type
-public record NProcDecl (Token Name, NVarDecl[] Params, NBlock Block)
-   : NMethodDecl (Name, Params, Block) {
+public record NFnDecl (Token Name, NVarDecl[] Params, NType Type, NBlock Block) : Node {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 #endregion
