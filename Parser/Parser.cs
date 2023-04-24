@@ -44,9 +44,9 @@ public class Parser {
    // proc-decl = "procedure" IDENT paramlist; block ";" .
    NMethodDecl MethodDecl (bool isfn) {
       Expect (isfn ? FUNCTION : PROCEDURE); var name = Expect (IDENT);
-      List<NVarDecl[]> vars = new ();
+      List<NVarDecl> vars = new ();
       Expect (OPEN);
-      if (Peek (IDENT)) do vars.Add (VarDecls ()); while (Match (SEMI));
+      if (Peek (IDENT)) do vars.AddRange (VarDecls ()); while (Match (SEMI));
       Expect (CLOSE);
       NType type = Unknown;
       if (isfn) {

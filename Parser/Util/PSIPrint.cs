@@ -48,10 +48,10 @@ public class PSIPrint : Visitor<StringBuilder> {
    }
 
    string Declaration (NMethodDecl d) {
-      return $"{d.Name.Text} ({Params (d.Params)})";
+      return $"{d.Name.Text} ({ParamsList (d.Params.GroupBy (x => x.Type))})";
 
-      string Params (NVarDecl[][] VarsList) => VarsList.Select (Param).ToCSV ("; ");
-      string Param (NVarDecl[] Vars) => $"{Vars.Select (x => x.Name.Text).ToCSV ()}: {Vars[0].Type}";
+      string ParamsList (IEnumerable<IGrouping<NType, NVarDecl>> VarsList) => VarsList.Select (Params).ToCSV ("; ");
+      string Params (IGrouping<NType, NVarDecl> Vars) => $"{Vars.Select (x => x.Name.Text).ToCSV ()}: {Vars.Key}";
    }
 
    public override StringBuilder Visit (NCompoundStmt b) {

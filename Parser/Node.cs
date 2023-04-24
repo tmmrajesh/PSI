@@ -30,16 +30,16 @@ public record NVarDecl (Token Name, NType Type) : Node {
 }
 
 // A base type of Method and Procedure declarations
-public abstract record NMethodDecl (Token Name, NVarDecl[][] Params, NBlock Block) : Node { }
+public abstract record NMethodDecl (Token Name, NVarDecl[] Params, NBlock Block) : Node { }
 
 // Declares a function with parameters and return-type
-public record NFnDecl (Token Name, NVarDecl[][] Params, NType Type, NBlock Block) 
+public record NFnDecl (Token Name, NVarDecl[] Params, NType Type, NBlock Block) 
    : NMethodDecl (Name, Params, Block) {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 
 // Declares a function with parameters and return-type
-public record NProcDecl (Token Name, NVarDecl[][] Params, NBlock Block)
+public record NProcDecl (Token Name, NVarDecl[] Params, NBlock Block)
    : NMethodDecl (Name, Params, Block) {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
