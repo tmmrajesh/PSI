@@ -20,11 +20,39 @@ public class PSIPrint : Visitor<StringBuilder> {
             NWrite ($"{g.Select (a => a.Name).ToCSV ()} : {g.Key};");
          N--;
       }
+
+      if (d.Methods.Length > 0) {
+         NWrite ("");
+         N++;
+         foreach (var method in d.Methods) {
+            Visit (method);
+            Write (";\n");
+         }
+         N--;
+      }
+
       return S;
    }
 
    public override StringBuilder Visit (NVarDecl d)
       => NWrite ($"{d.Name} : {d.Type}");
+
+   public override StringBuilder Visit (NFnDecl d) {
+      NWrite ($"function {Declaration (d)} : {d.Type};");
+      return Visit (d.Block);
+   }
+
+   public override StringBuilder Visit (NProcDecl d) {
+      NWrite ($"procedure {Declaration (d)};"); 
+      return Visit (d.Block);
+   }
+
+   string Declaration (NMethodDecl d) {
+      return $"{d.Name.Text} ({Params (d.Params)})";
+
+      string Params (NVarDecl[][] VarsList) => VarsList.Select (Param).ToCSV ("; ");
+      string Param (NVarDecl[] Vars) => $"{Vars.Select (x => x.Name.Text).ToCSV ()}: {Vars[0].Type}";
+   }
 
    public override StringBuilder Visit (NCompoundStmt b) {
       NWrite ("begin"); N++;  Visit (b.Stmts); N--; return NWrite ("end"); 
@@ -34,6 +62,14 @@ public class PSIPrint : Visitor<StringBuilder> {
       NWrite ($"{a.Name} := "); a.Expr.Accept (this); return Write (";");
    }
 
+   public override StringBuilder Visit (NCallStmt c) {
+      NWrite ($"{c.Name} (");
+      for (int i = 0; i < c.Params.Length; i++) {
+         if (i > 0) Write (", "); c.Params[i].Accept (this);
+      }
+      return Write (");");
+   }
+
    public override StringBuilder Visit (NWriteStmt w) {
       NWrite (w.NewLine ? "WriteLn (" : "Write (");
       for (int i = 0; i < w.Exprs.Length; i++) {
@@ -41,6 +77,16 @@ public class PSIPrint : Visitor<StringBuilder> {
          w.Exprs[i].Accept (this);
       }
       return Write (");");
+   }
+
+   public override StringBuilder Visit (NReadStmt s) 
+      => NWrite ($"Read ({s.Identifiers.Select (x => x.Text).ToCSV ()});");
+
+   public override StringBuilder Visit (NForStmt s) {
+      NWrite ($"for {s.LoopVar} := "); Visit (s.InitialExpr);
+      Write (s.Inc ? " to " : " downto "); Visit (s.FinalExpr); Write (" do");
+      N++; Visit (s.Stmt); N--;
+      return S;
    }
 
    public override StringBuilder Visit (NLiteral t)
@@ -64,6 +110,29 @@ public class PSIPrint : Visitor<StringBuilder> {
          if (i > 0) Write (", "); f.Params[i].Accept (this);
       }
       return Write (")");
+   }
+
+   public override StringBuilder Visit (NIfStmt s) {
+      NWrite ($"if "); s.Expr.Accept (this); Write (" then ");
+      N++; s.ThenStmt.Accept (this); N--;
+      if (s.ElseStmt != null) {
+         NWrite ("else");
+         N++;  s.ElseStmt.Accept (this); N--;
+      }
+      return S;
+   }
+
+   public override StringBuilder Visit (NRepeatStmt s) {
+      NWrite ($"repeat "); 
+      N++; Visit (s.Stmts); N--;
+      NWrite ("until " ); s.Expr.Accept (this); Write (";");
+      return S;
+   }
+
+   public override StringBuilder Visit (NWhileStmt s) {
+      NWrite ($"while "); Visit (s.Expr); Write (" do ");
+      N++; s.Stmt.Accept (this); N--;
+      return Write (";");
    }
 
    StringBuilder Visit (params Node[] nodes) {

@@ -21,8 +21,8 @@ public static class Extensions {
    public static string Quoted (this string s) => $"\"{s}\"";
 
    /// <summary>Convert a sequence of objects to a comma-delimited string</summary>
-   public static string ToCSV (this IEnumerable<object> objs)
-      => string.Join (", ", objs);
+   public static string ToCSV (this IEnumerable<object> objs, string sep = ", ")
+      => string.Join (sep, objs);
 
    public static T Visit<T> (this Visitor<T> visitor, IEnumerable<Node> nodes) {
       T result = default!;

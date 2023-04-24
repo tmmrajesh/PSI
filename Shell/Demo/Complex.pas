@@ -5,11 +5,11 @@ var
    name: string;
 
 
-function Fibo (fn: integer) : integer;
+function Fibo (n: integer) : integer;
 var
    fi: integer;
 begin
-   if fn <= 2 then Fibo := 1;
+   if n <= 2 then Fibo := 1;
    else Fibo := Fibo (n - 2) + Fibo (n - 1);
 end;
 
@@ -31,7 +31,7 @@ begin
    write ("Enter your name: ");
    read (name);
    write ("Hello, ", name, ". ", msg);
-end
+end;
 
 
 begin

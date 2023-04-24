@@ -20,12 +20,27 @@ public record NBlock (NDeclarations Decls, NCompoundStmt Body) : Node {
 }
 
 // The declarations section precedes the body of every block
-public record NDeclarations (NVarDecl[] Vars) : Node {
+public record NDeclarations (NVarDecl[] Vars, NMethodDecl[] Methods) : Node {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 
 // Declares a variable (with a type)
 public record NVarDecl (Token Name, NType Type) : Node {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+// A base type of Method and Procedure declarations
+public abstract record NMethodDecl (Token Name, NVarDecl[][] Params, NBlock Block) : Node { }
+
+// Declares a function with parameters and return-type
+public record NFnDecl (Token Name, NVarDecl[][] Params, NType Type, NBlock Block) 
+   : NMethodDecl (Name, Params, Block) {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+// Declares a function with parameters and return-type
+public record NProcDecl (Token Name, NVarDecl[][] Params, NBlock Block)
+   : NMethodDecl (Name, Params, Block) {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 #endregion
@@ -44,8 +59,37 @@ public record NWriteStmt (bool NewLine, NExpr[] Exprs) : NStmt {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 
+// A Read statement 
+public record NReadStmt (Token[] Identifiers) : NStmt {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
 // An assignment statement
 public record NAssignStmt (Token Name, NExpr Expr) : NStmt {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+public record NCallStmt (Token Name, NExpr[] Params) : NStmt {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+// If-then-else statement.
+public record NIfStmt (NExpr Expr, NStmt ThenStmt, NStmt? ElseStmt) : NStmt {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+// For-do statement
+public record NForStmt (Token LoopVar, NExpr InitialExpr, NExpr FinalExpr, NStmt Stmt, bool Inc = true) : NStmt {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+// Repeat-util statement
+public record NRepeatStmt (NExpr Expr, NStmt [] Stmts) : NStmt {
+   public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
+}
+
+// While-do statement
+public record NWhileStmt (NExpr Expr, NStmt Stmt) : NStmt {
    public override T Accept<T> (Visitor<T> visitor) => visitor.Visit (this);
 }
 #endregion
