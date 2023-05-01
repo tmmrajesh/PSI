@@ -41,6 +41,8 @@ public static class Extensions {
       return node;
    }
 
+   public static T SetInitialized<T> (this T v) where T : Node => v.SetFlag (EFlag.Initialized);
+
    public static NType GetLiteralType (this Token tLiteral)
       => tLiteral.Kind switch {
          L_INTEGER => Int, L_REAL => Real, L_BOOLEAN => Bool,
@@ -48,7 +50,8 @@ public static class Extensions {
       };
 
    // Is this node initialized?
-   public static bool Initialized (this Node node) => node.Flags.HasFlag (EFlag.Initialized);
+   public static bool IsInitialized (this Node node) => node.Flags.HasFlag (EFlag.Initialized);
+
 
    // Is this var a constant?
    public static bool IsConstant (this NVarDecl var) => var.Flags.HasFlag (EFlag.Const);

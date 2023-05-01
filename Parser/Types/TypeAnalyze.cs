@@ -38,7 +38,7 @@ public class TypeAnalyze : Visitor<NType> {
       using var _ = new SymScope (this);
       Visit (f.Params);
       // Assume all function parameters are initialized.
-      f.Params.ForEach (x => x.SetFlag (EFlag.Initialized));
+      f.Params.ForEach (x => x.SetInitialized ());
       // Add a temporary variable to handle Function return statement.
       if (f.Return != Void) mSymbols.Vars.Add (new (f.Name, f.Return));
       f.Body?.Accept (this);
@@ -51,11 +51,9 @@ public class TypeAnalyze : Visitor<NType> {
       => Visit (b.Stmts);
 
    public override NType Visit (NAssignStmt a) {
-      if (mSymbols.Find (a.Name.Text) is not NVarDecl v || v.IsConstant ())
-         throw new ParseException (a.Name, "Unknown variable");
+      var v = ExpectVar (a.Name).SetInitialized ();
       a.Expr.Accept (this);
       a.Expr = AddTypeCast (a.Name, a.Expr, v.Type);
-      v.SetFlag (EFlag.Initialized);
       return v.Type;
    }
    
@@ -79,21 +77,13 @@ public class TypeAnalyze : Visitor<NType> {
    }
 
    public override NType Visit (NForStmt f) {
-      using var _ = new SymScope (this);
-      var loopVar = new NVarDecl (f.Var, f.Start.Accept (this)).SetFlag (EFlag.Initialized);
-      mSymbols.Vars.Add (loopVar);
-      f.End.Accept (this); f.Body.Accept (this);
+      InitVar (f.Var);
+      f.Start.Accept (this);  f.End.Accept (this); f.Body.Accept (this);
       return Void;
    }
 
    public override NType Visit (NReadStmt r) {
-      foreach (var t in r.Vars) {
-         if (mSymbols.Find (t.Text) is NVarDecl v && !v.IsConstant ()) {
-            v.SetFlag (EFlag.Initialized);
-            continue;
-         }
-         throw new ParseException (t, "Unknown variable");
-      }
+      r.Vars.ForEach (InitVar);
       return Void;
    }
 
@@ -112,7 +102,7 @@ public class TypeAnalyze : Visitor<NType> {
 
    #region Expression --------------------------------------
    public override NType Visit (NLiteral t) {
-      t.SetFlag (EFlag.Initialized);
+      t.SetInitialized ();
       return t.Type = t.Value.GetLiteralType ();
    }
 
@@ -150,7 +140,7 @@ public class TypeAnalyze : Visitor<NType> {
 
    public override NType Visit (NIdentifier d) {
       if (mSymbols.Find (d.Name.Text) is NVarDecl v) {
-         if (v.Initialized ()) d.SetFlag (EFlag.Initialized);
+         if (v.IsInitialized ()) d.SetInitialized ();
          else throw new ParseException (d.Name, $"Using uninitialized variable '{d.Name.Text}'");
          return d.Type = v.Type;
       }
@@ -183,6 +173,13 @@ public class TypeAnalyze : Visitor<NType> {
       c.Expr.Accept (this); return c.Type;
    }
    #endregion
+
+   void InitVar (Token name) => ExpectVar (name).SetInitialized ();
+
+   NVarDecl ExpectVar (Token name) {
+      if (mSymbols.Find (name.Text) is NVarDecl v && !v.IsConstant ()) return v;
+      throw new ParseException (name, "Unknown variable");
+   }
 
    NType Visit (IEnumerable<Node> nodes) {
       foreach (var node in nodes) node.Accept (this);

@@ -4,6 +4,10 @@
     <ProjectReference Include="..\Parser\Parser.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Demo\Tests\Z\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>

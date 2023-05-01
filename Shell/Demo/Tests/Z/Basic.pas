@@ -1,7 +1,9 @@
 program Basic;
+const
+   pi = 3.14;
 var
    i, j, k: integer;
-   pi, f: real;
+   f: real;
 begin 
    i := (3 + 4) * 2;
    f := -pi * sin (3.5) + length ("hello");
