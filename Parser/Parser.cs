@@ -174,9 +174,10 @@ public class Parser {
    #region Expression --------------------------------------
    // expression = equality .
    NExpr Expression () {
-      using var span = new TokenSpan (mTokens);
+      var span = new TokenSpan (mTokens);
+      using var _ = span.Capture ();
       var expr = Equality ();
-      expr.Source = span.ToArray ();
+      expr.Source = span;
       return expr;
    }
 
@@ -293,22 +294,31 @@ public class Parser {
    Token mToken, mPrevious, mPrevPrev;
    readonly Tokenizer mTokenizer;
    #endregion
+}
 
-   #region Nested types -----------
-   // A class to capture a token span within a block.
-   class TokenSpan : IEnumerable<Token>, IDisposable {
-      public TokenSpan (List<Token> source) => (mTokens, mStart) = (source, source.Count - 1);
+// A class to represent a span within a token stream.
+public class TokenSpan : IEnumerable<Token> {
+   public TokenSpan (List<Token> source) => (mTokens, mStart) = (source, source.Count - 1);
 
-      public IEnumerator<Token> GetEnumerator () 
-         => mTokens.Skip (mStart).Take ((mEnd ?? mTokens.Count - 1) - mStart).GetEnumerator ();
+   public int Count => (mEnd ?? mTokens.Count - 1) - mStart;
 
-      IEnumerator IEnumerable.GetEnumerator () => GetEnumerator ();
+   public Token this[int index] => mTokens[mStart + index];
 
-      public void Dispose () => mEnd = mTokens.Count - 1;
+   public IDisposable Capture () => new SpanCapture (this);
 
-      readonly List<Token> mTokens;
-      readonly int mStart;
-      int? mEnd;
+   public IEnumerator<Token> GetEnumerator ()
+      => mTokens.Skip (mStart).Take (Count).GetEnumerator ();
+
+   IEnumerator IEnumerable.GetEnumerator () => GetEnumerator ();
+
+   readonly List<Token> mTokens;
+   readonly int mStart;
+   int? mEnd;
+
+   // Helper class to help capture the token span.
+   class SpanCapture : IDisposable {
+      public SpanCapture (TokenSpan span) => Span = span;
+      readonly TokenSpan Span;
+      public void Dispose () => Span.mEnd = Span.mTokens.Count - 1;
    }
-   #endregion
 }

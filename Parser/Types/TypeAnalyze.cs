@@ -189,8 +189,8 @@ public class TypeAnalyze : Visitor<NType> {
 
    NType VisitCondition (NExpr cond) {
       var type = cond.Accept (this);
-      if (Bool != type && cond.Source?.Any () == true)
-         throw new ParseException (cond.Source[0], $"Expecting boolean condition, found '{type}'");
+      if (Bool != type && cond.Source.Any ())
+         throw new ParseException (cond.Source[0], $"Expecting Boolean condition, found '{type}'");
       return type;
    }
 

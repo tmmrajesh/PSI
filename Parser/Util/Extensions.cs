@@ -6,6 +6,9 @@ using static Token.E;
 using static NType;
 
 public static class Extensions {
+   // Does the token span have any element?
+   public static bool Any (this TokenSpan? span) => span?.Count > 0;
+
    /// <summary>Clamps the given value so it lies with the range min..max</summary>
    public static T Clamp<T> (this T a, T min, T max) where T : IComparable<T> {
       if (a.CompareTo (min) < 0) return min;

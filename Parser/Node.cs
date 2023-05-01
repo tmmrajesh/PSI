@@ -96,7 +96,7 @@ public record NAssignStmt (Token Name, NExpr Expr) : NStmt {
 // Base class for expression nodes
 public abstract record NExpr : Node {
    public NType Type { get; set; }     // The type of this expression
-   public Token[]? Source { get; set; }
+   public TokenSpan? Source { get; set; }
 }
 
 // A Literal (string / real / integer /  ...)
