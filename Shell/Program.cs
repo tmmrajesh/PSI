@@ -1,15 +1,15 @@
 ﻿using PSI;
-using System.Xml.Linq;
 
 static class Start {
    static void Main () {
       Test ("../Shell/Demo/Tests/Z/Complex.pas");
+      // Test ("../Shell/Demo/Tests/B/Init07.pas");
 
       //// All Tests
       //Test (Directory.GetFiles ("../Shell/Demo/Tests", "*.pas", SearchOption.AllDirectories));
 
       //// Initializations only
-      //Test (Directory.GetFiles ("../Shell/Demo/Tests/B", "*.pas", SearchOption.AllDirectories));
+      //Test (Directory.GetFiles ("../Shell/Demo/Tests/D", "*.pas", SearchOption.AllDirectories));
    }
 
    static void Test (params string [] files) {

@@ -4,11 +4,14 @@
 namespace PSI;
 using static Token.E;
 using static NType;
+using System.Collections;
 
 public class Parser {
    // Interface -------------------------------------------
-   public Parser (Tokenizer tokenizer)
-      => mToken = mPrevPrev = mPrevious = (mTokenizer = tokenizer).Next ();
+   public Parser (Tokenizer tokenizer) {
+      mToken = mPrevPrev = mPrevious = (mTokenizer = tokenizer).Next ();
+      mTokens.Add (mToken);
+   }
 
    public NProgram Parse () {
       var node = Program ();
@@ -170,8 +173,12 @@ public class Parser {
 
    #region Expression --------------------------------------
    // expression = equality .
-   NExpr Expression () 
-      => Equality ();
+   NExpr Expression () {
+      using var span = new TokenSpan (mTokens);
+      var expr = Equality ();
+      expr.Source = span.ToArray ();
+      return expr;
+   }
 
    // equality = equality = comparison [ ("=" | "<>") comparison ] .
    NExpr Equality () {
@@ -259,10 +266,13 @@ public class Parser {
       if (kinds.Contains (mToken.Kind)) {
          mPrevPrev = mPrevious; mPrevious = mToken; 
          mToken = mTokenizer.Next ();
+         mTokens.Add (mToken);
          return true;
       }
       return false;
    }
+   // The token span.
+   List<Token> mTokens = new ();
 
    [DoesNotReturn]
    void Throw (string message) {
@@ -282,5 +292,23 @@ public class Parser {
 
    Token mToken, mPrevious, mPrevPrev;
    readonly Tokenizer mTokenizer;
-   #endregion 
+   #endregion
+
+   #region Nested types -----------
+   // A class to capture a token span within a block.
+   class TokenSpan : IEnumerable<Token>, IDisposable {
+      public TokenSpan (List<Token> source) => (mTokens, mStart) = (source, source.Count - 1);
+
+      public IEnumerator<Token> GetEnumerator () 
+         => mTokens.Skip (mStart).Take ((mEnd ?? mTokens.Count - 1) - mStart).GetEnumerator ();
+
+      IEnumerator IEnumerable.GetEnumerator () => GetEnumerator ();
+
+      public void Dispose () => mEnd = mTokens.Count - 1;
+
+      readonly List<Token> mTokens;
+      readonly int mStart;
+      int? mEnd;
+   }
+   #endregion
 }

@@ -1,9 +1,9 @@
 program App;
 var 
-   i, j : integer;
-   k: boolean;
+   i, j, k : real;
 
 begin
+   k := 10;
    if k then 
       i := 12;
    else 

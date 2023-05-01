@@ -1,16 +1,8 @@
 program App;
 var 
-   i, j : integer;
-
-procedure foo () ;
-var 
-   i : string;
-begin
-   j := 5;
-   i := j;
-end;
+   i, j : real;
 
 begin
-   foo ();
-   writeln (j);
+   i := 10;
+   j := i + true;
 end.

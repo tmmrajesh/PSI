@@ -12,11 +12,12 @@ public class TypeAnalyze : Visitor<NType> {
    SymTable mSymbols;
 
    #region Declarations ------------------------------------
-   public override NType Visit (NProgram p) 
-      => Visit (p.Block);
+   public override NType Visit (NProgram p) {
+      using var _ = new SymScope (this);
+      return Visit (p.Block);
+   }
    
    public override NType Visit (NBlock b) {
-      using var _ = new SymScope (this);
       Visit (b.Declarations); Visit (b.Body);
       return Void;
    }
@@ -36,11 +37,11 @@ public class TypeAnalyze : Visitor<NType> {
       mSymbols.Funcs.Add (f);
       // Define a scope for the function parameters.
       using var _ = new SymScope (this);
+      // Add a temporary variable to handle Function return statement.
+      if (f.Return != Void) mSymbols.Vars.Add (new (f.Name, f.Return));
       Visit (f.Params);
       // Assume all function parameters are initialized.
       f.Params.ForEach (x => x.SetInitialized ());
-      // Add a temporary variable to handle Function return statement.
-      if (f.Return != Void) mSymbols.Vars.Add (new (f.Name, f.Return));
       f.Body?.Accept (this);
       return f.Return;
    }
@@ -71,7 +72,7 @@ public class TypeAnalyze : Visitor<NType> {
       => Visit (w.Exprs);
 
    public override NType Visit (NIfStmt f) {
-      f.Condition.Accept (this);
+      VisitCondition (f.Condition);
       f.IfPart.Accept (this); f.ElsePart?.Accept (this);
       return Void;
    }
@@ -88,12 +89,12 @@ public class TypeAnalyze : Visitor<NType> {
    }
 
    public override NType Visit (NWhileStmt w) {
-      w.Condition.Accept (this); w.Body.Accept (this);
+      VisitCondition (w.Condition); w.Body.Accept (this);
       return Void; 
    }
 
    public override NType Visit (NRepeatStmt r) {
-      Visit (r.Stmts); r.Condition.Accept (this);
+      Visit (r.Stmts); VisitCondition (r.Condition);
       return Void;
    }
 
@@ -184,6 +185,13 @@ public class TypeAnalyze : Visitor<NType> {
    NType Visit (IEnumerable<Node> nodes) {
       foreach (var node in nodes) node.Accept (this);
       return Void;
+   }
+
+   NType VisitCondition (NExpr cond) {
+      var type = cond.Accept (this);
+      if (Bool != type && cond.Source?.Any () == true)
+         throw new ParseException (cond.Source[0], $"Expecting boolean condition, found '{type}'");
+      return type;
    }
 
    void ValidateSymbol (Token name) {
