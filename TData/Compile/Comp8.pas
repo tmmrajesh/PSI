@@ -14,6 +14,8 @@ begin
 end
   
 begin
+  WriteLn ("NOT (2) = ", not 2);
+  WriteLn ("NOT (True) = ", not true);
   g := Minimum (13, 5);
   WriteLn ("Minimum (13, 5) = ", g);
   if 3 < 4 then begin

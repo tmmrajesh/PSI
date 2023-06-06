@@ -17,10 +17,10 @@ public class PSICompiler {
 
          // At this point, the ILCodeGen has generated IL code, save it to 
          // a file and call ILAsm to assemble it:
-         File.WriteAllText ("../Output/PSIOutput.il", codegen.S.ToString ());
+         File.WriteAllText ("P:/Output/PSIOutput.il", codegen.S.ToString ());
          var pi = new ProcessStartInfo (
-            "../Bin/AsmCore/ILAsm.exe",
-            "/QUIET /dll /PE64 /X64 ../Output/PSIOutput.il /output=../Output/PSIOutput.dll");
+            "P:/Bin/AsmCore/ILAsm.exe",
+            "/QUIET /dll /PE64 /X64 P:/Output/PSIOutput.il /output=P:/Output/PSIOutput.dll");
          
          // If ILASM reports any errors, throw an exception 
          var process = Process.Start (pi)!;
